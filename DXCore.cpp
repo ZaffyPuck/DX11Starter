@@ -99,7 +99,7 @@ HRESULT DXCore::InitWindow()
 	wndClass.hCursor		= LoadCursor(NULL, IDC_ARROW);		// Default arrow cursor
 	wndClass.hbrBackground	= (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wndClass.lpszMenuName	= NULL;
-	wndClass.lpszClassName	= L"Direct3DWindowClass"; // The "L" means this is a wide-character string
+	wndClass.lpszClassName	= L"D3DWindowClass";
 
 	// Attempt to register the window class we've defined
 	if (!RegisterClass(&wndClass))
@@ -508,7 +508,7 @@ void DXCore::UpdateTitleBarStats()
 		"    Height: "		<< windowHeight <<
 		"    FPS: "			<< fpsFrameCount <<
 		"    Frame Time: "	<< mspf << "ms";
-
+	
 	// Append the version of Direct3D the app is using
 	switch (dxFeatureLevel)
 	{

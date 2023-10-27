@@ -3,8 +3,7 @@
 #include <codecvt>
 #include <locale>
 
-#include "Helpers.h"
-
+#include "PathHelpers.h"
 
 // --------------------------------------------------------------------------
 // Gets the actual path to this executable as a wide character string (wstring)
@@ -21,17 +20,17 @@
 //    version control packages by default.  Meaning: the option must be
 //    changed on every PC.  Ugh.  So instead, here's a helper.
 // --------------------------------------------------------------------------
-std::wstring GetExePath()
+std::string GetExePath()
 {
 	// Assume the path is just the "current directory" for now
-	std::wstring path = L".\\";
+	std::string path = ".\\";
 
 	// Get the real, full path to this executable
-	wchar_t currentDir[1024] = {};
-	GetModuleFileName(0, currentDir, 1024);
+	char currentDir[1024] = {};
+	GetModuleFileNameA(0, currentDir, 1024);
 
 	// Find the location of the last slash charaacter
-	wchar_t* lastSlash = wcsrchr(currentDir, '\\');
+	char* lastSlash = strrchr(currentDir, '\\');
 	if (lastSlash)
 	{
 		// End the string at the last slash character, essentially
@@ -55,14 +54,27 @@ std::wstring GetExePath()
 //  instead of the app's current working directory.
 // 
 //  See the comments of GetExePath() for more details.
-// 
-//  Note that this uses wide character strings (wstring)
-//  instead of standard strings, as most windows API
-//  calls require wide character strings.
 // ----------------------------------------------------
+std::string FixPath(const std::string& relativeFilePath)
+{
+	return GetExePath() + "\\" + relativeFilePath;
+}
+
+
+// ----------------------------------------------------
+//  Fixes a relative path so that it is consistently
+//  evaluated from the executable's actual directory
+//  instead of the app's current working directory.
+// 
+//  See the comments of GetExePath() for more details.
+// 
+//  Note that this overload uses wide character strings
+//  (wstring) instead of standard strings, as most windows
+//  API calls require wide character strings.
+// ---------------------------------------------------- 
 std::wstring FixPath(const std::wstring& relativeFilePath)
 {
-	return GetExePath() + L"\\" + relativeFilePath;
+	return NarrowToWide(GetExePath()) + L"\\" + relativeFilePath;
 }
 
 
