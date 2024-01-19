@@ -18,10 +18,32 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="PixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="VertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DXCore.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="PathHelpers.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DXCore.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="PathHelpers.h" />
+    <ClInclude Include="Vertex.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{17f1a74a-4172-45ab-be4a-1cdddb97a540}</ProjectGuid>
+    <ProjectGuid>{0CACAE20-ACC5-4056-A225-989FC0E00551}</ProjectGuid>
     <RootNamespace>DX11Starter</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -138,34 +160,6 @@
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="DXCore.cpp" />
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="PathHelpers.cpp" />
-    <ClCompile Include="Input.cpp" />
-    <ClCompile Include="Main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="DXCore.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="PathHelpers.h" />
-    <ClInclude Include="Input.h" />
-    <ClInclude Include="Vertex.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="PixelShader.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="VertexShader.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-    </FxCompile>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
