@@ -77,13 +77,13 @@ protected:
 	size_t rtvDescriptorSize;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap;
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[numBackBuffers] = {};
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = {};
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[numBackBuffers];
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> backBuffers[numBackBuffers];
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilBuffer;
 	D3D12_VIEWPORT viewport;
-	D3D12_RECT scissorRect = {};
+	D3D12_RECT scissorRect;
 
 	// Helper function for allocating a console window
 	void CreateConsoleWindow(int bufferLines, int bufferColumns, int windowLines, int windowColumns);
