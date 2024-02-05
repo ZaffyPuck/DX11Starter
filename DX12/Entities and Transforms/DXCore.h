@@ -7,6 +7,7 @@
 #include <wrl/client.h> // Used for ComPtr - a smart pointer for COM objects
 
 #pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "dxgi.lib")
 
 class DXCore
 {

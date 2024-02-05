@@ -236,6 +236,19 @@ HRESULT DXCore::InitDirect3D()
 	}
 	// Swap chain creation
 	{
+		// Create a DXGI factory, which is what we use to create a swap chain
+		Microsoft::WRL::ComPtr<IDXGIFactory6> dxgiFactory;
+		CreateDXGIFactory(IID_PPV_ARGS(dxgiFactory.GetAddressOf()));
+
+		// Determine if screen tearing ("vsync off") is available
+		// - This is necessary due to variable refresh rate displays
+		BOOL tearingSupported = false;
+		HRESULT featureCheck = dxgiFactory->CheckFeatureSupport(
+			DXGI_FEATURE_PRESENT_ALLOW_TEARING,
+			&tearingSupported,
+			sizeof(tearingSupported));
+		deviceSupportsTearing = SUCCEEDED(featureCheck) && tearingSupported;
+
 		// Create a description of how our swap chain should work
 		DXGI_SWAP_CHAIN_DESC swapDesc = {};
 		swapDesc.BufferCount = numBackBuffers;
@@ -253,9 +266,8 @@ HRESULT DXCore::InitDirect3D()
 		swapDesc.SampleDesc.Quality = 0;
 		swapDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swapDesc.Windowed = true;
-		// Create a DXGI factory, which is what we use to create a swap chain
-		Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory;
-		CreateDXGIFactory(IID_PPV_ARGS(dxgiFactory.GetAddressOf()));
+
+		// Create swap chain
 		hr = dxgiFactory->CreateSwapChain(commandQueue.Get(), &swapDesc, swapChain.GetAddressOf());
 	}
 	// Still inside DXCore::InitDirectX()! Create back buffers
