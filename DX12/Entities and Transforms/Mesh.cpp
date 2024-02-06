@@ -15,26 +15,10 @@ using namespace DirectX;
 // numIndices - The number of indices in the index array
 // device     - The D3D device to use for buffer creation
 // --------------------------------------------------------
-Mesh::Mesh(Vertex* vertices, size_t numVerts, unsigned int* indices, size_t numIndices, Microsoft::WRL::ComPtr<ID3D11Device> device) :
-	numIndices(0),
+Mesh::Mesh(Vertex* vertices, size_t vertexCount, UINT* indices, size_t indexCount)
 {
-	// Create the two buffers
-	DX12Utility& dx12Utility = DX12Utility::GetInstance();
-	vertexBuffer = dx12Utility.CreateStaticBuffer(sizeof(Vertex), numVerts, vertices);
-	indexBuffer = dx12Utility.CreateStaticBuffer(sizeof(unsigned int), numIndices, indices);
-
-	// Set up the views
-	vbView = {};
-	vbView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
-	vbView.StrideInBytes = sizeof(Vertex);
-	vbView.SizeInBytes = sizeof(Vertex) * numVerts;
-
-	ibView = {};
-	ibView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
-	ibView.Format = DXGI_FORMAT_R32_UINT;
-	ibView.SizeInBytes = sizeof(unsigned int) * numIndices;
+	CreateBuffers(vertices, vertexCount, indices, indexCount);
 }
-
 
 // --------------------------------------------------------
 // Creates a new mesh by loading vertices from the given .obj file
@@ -42,8 +26,10 @@ Mesh::Mesh(Vertex* vertices, size_t numVerts, unsigned int* indices, size_t numI
 // objFile  - Path to the .obj 3D model file to load
 // device   - The D3D device to use for buffer creation
 // --------------------------------------------------------
-Mesh::Mesh(const std::wstring& objFile, Microsoft::WRL::ComPtr<ID3D11Device> device) :
-	numIndices(0)
+Mesh::Mesh(const std::wstring& objFile) :
+ibView{},
+vbView{},
+indexCount(0)
 {
 	// File input object
 	std::ifstream obj(objFile);
@@ -56,9 +42,9 @@ Mesh::Mesh(const std::wstring& objFile, Microsoft::WRL::ComPtr<ID3D11Device> dev
 	std::vector<XMFLOAT3> positions;     // Positions from the file
 	std::vector<XMFLOAT3> normals;       // Normals from the file
 	std::vector<XMFLOAT2> uvs;           // UVs from the file
-	std::vector<Vertex> verts;           // Verts we're assembling
+	std::vector<Vertex> vertices;        // Verts we're assembling
 	std::vector<UINT> indices;           // Indices of these verts
-	unsigned int vertCounter = 0;        // Count of vertices/indices
+	UINT vertCounter = 0;        // Count of vertices/indices
 	char chars[100];                     // String for line reading
 
 	// Still have data left?
@@ -166,9 +152,9 @@ Mesh::Mesh(const std::wstring& objFile, Microsoft::WRL::ComPtr<ID3D11Device> dev
 			v3.Normal.z *= -1.0f;
 
 			// Add the verts to the vector (flipping the winding order)
-			verts.push_back(v1);
-			verts.push_back(v3);
-			verts.push_back(v2);
+			vertices.push_back(v1);
+			vertices.push_back(v3);
+			vertices.push_back(v2);
 
 			// Add three more indices
 			indices.push_back(vertCounter); vertCounter += 1;
@@ -190,9 +176,9 @@ Mesh::Mesh(const std::wstring& objFile, Microsoft::WRL::ComPtr<ID3D11Device> dev
 				v4.Normal.z *= -1.0f;
 
 				// Add a whole triangle (flipping the winding order)
-				verts.push_back(v1);
-				verts.push_back(v4);
-				verts.push_back(v3);
+				vertices.push_back(v1);
+				vertices.push_back(v4);
+				vertices.push_back(v3);
 
 				// Add three more indices
 				indices.push_back(vertCounter); vertCounter += 1;
@@ -204,64 +190,32 @@ Mesh::Mesh(const std::wstring& objFile, Microsoft::WRL::ComPtr<ID3D11Device> dev
 
 	// Close the file and create the actual buffers
 	obj.close();
-	CreateBuffers(&verts[0], vertCounter, &indices[0], vertCounter, device);
+
+	// Will vertices.data() and indices.data() work?
+	CreateBuffers(&vertices[0], vertCounter, &indices[0], vertCounter);
 }
 
-// --------------------------------------------------------
-// Destructor doesn't have much to do since we're using ComPtrs
-// --------------------------------------------------------
-Mesh::~Mesh() { }
 
-// --------------------------------------------------------
-// Getters for private variables
-// --------------------------------------------------------
-Microsoft::WRL::ComPtr<ID3D12Resource> Mesh::GetVertexBuffer() { return vertexBuffer; }
-Microsoft::WRL::ComPtr<ID3D12Resource> Mesh::GetIndexBuffer() { return indexBuffer; }
-D3D12_VERTEX_BUFFER_VIEW Mesh::GetVertexBufferView() { return vbView; }
-D3D12_INDEX_BUFFER_VIEW Mesh::GetIndexBufferView() { return ibView; }
-unsigned int Mesh::GetIndexCount() { return numIndices; }
-
-// --------------------------------------------------------
-// Helper for creating the actual D3D buffers.
-// Also calculates tangents for each vertex before creating buffers.
-//
-// vertArray  - An array of vertices
-// numVerts   - The number of verts in the array
-// indexArray - An array of indices into the vertex array
-// numIndices - The number of indices in the index array
-// device     - The D3D device to use for buffer creation
-// --------------------------------------------------------
-void Mesh::CreateBuffers(Vertex* vertArray, size_t numVerts, unsigned int* indexArray, size_t numIndices, Microsoft::WRL::ComPtr<ID3D11Device> device)
+void Mesh::CreateBuffers(Vertex* vertices, size_t vertexCount, UINT* indices, size_t indexCount)
 {
-	// Calculate the tangents of each vertex first
-	CalculateTangents(vertArray, numVerts, indexArray, numIndices);
+	this->indexCount = indexCount;
 
-	// Create the vertex buffer
-	D3D11_BUFFER_DESC vbd = {};
-	vbd.Usage = D3D11_USAGE_IMMUTABLE;
-	vbd.ByteWidth = sizeof(Vertex) * (UINT)numVerts; // Number of vertices
-	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vbd.CPUAccessFlags = 0;
-	vbd.MiscFlags = 0;
-	vbd.StructureByteStride = 0;
-	D3D11_SUBRESOURCE_DATA initialVertexData = {};
-	initialVertexData.pSysMem = vertArray;
-	device->CreateBuffer(&vbd, &initialVertexData, vb.GetAddressOf());
+	// Calculate the tangents before copying to buffer
+	CalculateTangents(vertices, vertexCount, indices, indexCount);
 
-	// Create the index buffer
-	D3D11_BUFFER_DESC ibd = {};
-	ibd.Usage = D3D11_USAGE_IMMUTABLE;
-	ibd.ByteWidth = sizeof(unsigned int) * (UINT)numIndices; // Number of indices
-	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	ibd.CPUAccessFlags = 0;
-	ibd.MiscFlags = 0;
-	ibd.StructureByteStride = 0;
-	D3D11_SUBRESOURCE_DATA initialIndexData = {};
-	initialIndexData.pSysMem = indexArray;
-	device->CreateBuffer(&ibd, &initialIndexData, ib.GetAddressOf());
+	// Create the two buffers
+	DX12Utility& dx12Utility = DX12Utility::GetInstance();
+	vertexBuffer = dx12Utility.CreateStaticBuffer(sizeof(Vertex), vertexCount, vertices);
+	indexBuffer = dx12Utility.CreateStaticBuffer(sizeof(unsigned int), indexCount, indices);
 
-	// Save the indices
-	this->numIndices = (unsigned int)numIndices;
+	// Set up the views
+	vbView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
+	vbView.StrideInBytes = sizeof(Vertex);
+	vbView.SizeInBytes = sizeof(Vertex) * vertexCount;
+
+	ibView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
+	ibView.Format = DXGI_FORMAT_R32_UINT;
+	ibView.SizeInBytes = sizeof(unsigned int) * indexCount;
 }
 
 // --------------------------------------------------------
@@ -275,24 +229,24 @@ void Mesh::CreateBuffers(Vertex* vertArray, size_t numVerts, unsigned int* index
 //
 // - Be sure to call this BEFORE creating your D3D vertex/index buffers
 // --------------------------------------------------------
-void Mesh::CalculateTangents(Vertex* verts, size_t numVerts, unsigned int* indices, size_t numIndices)
+void Mesh::CalculateTangents(Vertex* vertices, size_t vertexCount, UINT* indices, size_t indexCount)
 {
 	// Reset tangents
-	for (int i = 0; i < numVerts; i++)
+	for (int i = 0; i < vertexCount; i++)
 	{
-		verts[i].Tangent = XMFLOAT3(0, 0, 0);
+		vertices[i].Tangent = XMFLOAT3(0, 0, 0);
 	}
 
 	// Calculate tangents one whole triangle at a time
-	for (int i = 0; i < numIndices;)
+	for (int i = 0; i < indexCount;)
 	{
 		// Grab indices and vertices of first triangle
 		unsigned int i1 = indices[i++];
 		unsigned int i2 = indices[i++];
 		unsigned int i3 = indices[i++];
-		Vertex* v1 = &verts[i1];
-		Vertex* v2 = &verts[i2];
-		Vertex* v3 = &verts[i3];
+		Vertex* v1 = &vertices[i1];
+		Vertex* v2 = &vertices[i2];
+		Vertex* v3 = &vertices[i3];
 
 		// Calculate vectors relative to triangle positions
 		float x1 = v2->Position.x - v1->Position.x;
@@ -332,11 +286,11 @@ void Mesh::CalculateTangents(Vertex* verts, size_t numVerts, unsigned int* indic
 	}
 
 	// Ensure all of the tangents are orthogonal to the normals
-	for (int i = 0; i < numVerts; i++)
+	for (int i = 0; i < vertexCount; i++)
 	{
 		// Grab the two vectors
-		XMVECTOR normal = XMLoadFloat3(&verts[i].Normal);
-		XMVECTOR tangent = XMLoadFloat3(&verts[i].Tangent);
+		XMVECTOR normal = XMLoadFloat3(&vertices[i].Normal);
+		XMVECTOR tangent = XMLoadFloat3(&vertices[i].Tangent);
 
 		// Use Gram-Schmidt orthonormalize to ensure
 		// the normal and tangent are exactly 90 degrees apart
@@ -344,24 +298,6 @@ void Mesh::CalculateTangents(Vertex* verts, size_t numVerts, unsigned int* indic
 			tangent - normal * XMVector3Dot(normal, tangent));
 
 		// Store the tangent
-		XMStoreFloat3(&verts[i].Tangent, tangent);
+		XMStoreFloat3(&vertices[i].Tangent, tangent);
 	}
-}
-
-// --------------------------------------------------------
-// Binds the mesh buffers and issues a draw call.  Note that
-// this method assumes you're drawing the entire mesh.
-//
-// context - D3D context for issuing rendering calls
-// --------------------------------------------------------
-void Mesh::SetBuffersAndDraw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context)
-{
-	// Set buffers in the input assembler
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-	context->IASetVertexBuffers(0, 1, vb.GetAddressOf(), &stride, &offset);
-	context->IASetIndexBuffer(ib.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-	// Draw this mesh
-	context->DrawIndexed(this->numIndices, 0, 0);
 }

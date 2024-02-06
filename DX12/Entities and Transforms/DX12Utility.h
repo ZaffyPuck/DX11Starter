@@ -16,7 +16,7 @@ public:
 		return *instance;
 	}
 
-	~DX12Utility();
+	~DX12Utility(){};
 
 	// Initialization for singleton
 	void Initialize(
@@ -39,12 +39,15 @@ public:
 
 private:
 	static DX12Utility* instance;
+
 	// Overall device
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
+
 	// Command list related | Note: We're assuming a single command list for the entire engine
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+
 	// Basic CPU/GPU synchronization
 	Microsoft::WRL::ComPtr<ID3D12Fence> waitFence;
 	HANDLE waitFenceEvent;
@@ -54,11 +57,13 @@ private:
 	// is 256 bytes or less. Larger buffers are fine, but will
 	// result in fewer buffers in use at any time
 	const unsigned int maxConstantBuffers = 1000;
+
 	// GPU-side constant buffer upload heap
 	Microsoft::WRL::ComPtr<ID3D12Resource> cbUploadHeap;
 	UINT64 cbUploadHeapSizeInBytes;
 	UINT64 cbUploadHeapOffsetInBytes;
 	void* cbUploadHeapStartAddress;
+
 	// GPU-side CBV/SRV descriptor heap
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> cbvSrvDescriptorHeap;
 	SIZE_T cbvSrvDescriptorHeapIncrementSize;

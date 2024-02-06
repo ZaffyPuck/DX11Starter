@@ -193,11 +193,10 @@ void DX12Utility::CreateCBVSRVDescriptorHeap()
 {
 	// Ask the device for the increment size for CBV descriptor heaps
 	// This can vary by GPU so we need to query for it
-	cbvSrvDescriptorHeapIncrementSize =
-		(SIZE_T)device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	cbvSrvDescriptorHeapIncrementSize = (SIZE_T)device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	// Describe the descriptor heap we want to make
 	D3D12_DESCRIPTOR_HEAP_DESC dhDesc = {};
-	dhDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE; // Shaders can see these!
+	dhDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE; // Shaders can see these
 	dhDesc.NodeMask = 0; // Node here means physical GPU - we only have 1 so its index is 0
 	dhDesc.NumDescriptors = maxConstantBuffers; // How many descriptors will we need?
 	dhDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV; // This heap can store CBVs, SRVs and UAVs

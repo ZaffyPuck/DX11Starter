@@ -1,6 +1,6 @@
 #pragma once
 
-#include <d3d11.h>
+#include <d3d12.h>
 #include <wrl/client.h>
 #include <string>
 
@@ -10,32 +10,24 @@
 class Mesh
 {
 public:
-	Mesh(Vertex* vertArray, size_t numVerts, unsigned int* indexArray, size_t numIndices, Microsoft::WRL::ComPtr<ID3D11Device> device);
-	Mesh(const std::wstring& objFile, Microsoft::WRL::ComPtr<ID3D11Device> device);
-	~Mesh();
+	Mesh(Vertex* vertices, size_t vertexCount, UINT* indices, size_t indexCount);
+	Mesh(const std::wstring& objFile);
 
 	// Getters for mesh data
-	Microsoft::WRL::ComPtr<ID3D12Resource> GetVertexBuffer();
-	Microsoft::WRL::ComPtr<ID3D12Resource> GetIndexBuffer();
-	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView();
-	D3D12_INDEX_BUFFER_VIEW GetIndexBufferView();
-	unsigned int GetIndexCount();
-
-	// Basic mesh drawing
-	void SetBuffersAndDraw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context);
+	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() { return vbView; }
+	D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() { return ibView; }
+	int  GetIndexCount() { return indexCount; }
 
 private:
-	// D3D buffers
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer;
 	D3D12_VERTEX_BUFFER_VIEW vbView;
 	D3D12_INDEX_BUFFER_VIEW ibView;
+	int  indexCount;
 
-	// Total indices in this mesh
-	unsigned int numIndices;
+	void CreateBuffers(Vertex* vertices, size_t vertexCount, UINT* indices, size_t indexCount);
 
 	// Helper for creating buffers (in the event we add more constructor overloads)
-	void CreateBuffers(Vertex* vertArray, size_t numVerts, unsigned int* indexArray, size_t numIndices, Microsoft::WRL::ComPtr<ID3D11Device> device);
-	void CalculateTangents(Vertex* verts, size_t numVerts, unsigned int* indices, size_t numIndices);
+	void CalculateTangents(Vertex* vertices, size_t vertexCount, UINT* indices, size_t indexCount);
 };
 
