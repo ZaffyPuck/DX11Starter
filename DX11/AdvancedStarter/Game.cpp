@@ -8,9 +8,9 @@
 #include "Helpers.h"
 
 #include "WICTextureLoader.h"
-#include "ImGui/imgui.h"
-#include "ImGui/imgui_impl_dx11.h"
-#include "ImGui/imgui_impl_win32.h"
+#include "../../ImGui/imgui.h"
+#include "../../ImGui/imgui_impl_dx11.h"
+#include "../../ImGui/imgui_impl_win32.h"
 
 
 // Needed for a helper function to read compiled shader files from the hard drive
@@ -94,9 +94,9 @@ void Game::Init()
 
 	// Asset loading and entity creation
 	LoadAssetsAndCreateEntities();
-	
+
 	// Tell the input assembler stage of the pipeline what kind of
-	// geometric primitives (points, lines or triangles) we want to draw.  
+	// geometric primitives (points, lines or triangles) we want to draw.
 	// Essentially: "What kind of shape should the GPU draw with our data?"
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -108,7 +108,7 @@ void Game::Init()
 	//  - These settings persist until we change them
 	{
 		// Tell the input assembler (IA) stage of the pipeline what kind of
-		// geometric primitives (points, lines or triangles) we want to draw.  
+		// geometric primitives (points, lines or triangles) we want to draw.
 		// Essentially: "What kind of shape should the GPU draw with our vertices?"
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
@@ -136,7 +136,7 @@ void Game::LoadAssetsAndCreateEntities()
 	std::shared_ptr<SimplePixelShader> pixelShader		= LoadShader(SimplePixelShader, L"PixelShader.cso");
 	std::shared_ptr<SimplePixelShader> pixelShaderPBR	= LoadShader(SimplePixelShader, L"PixelShaderPBR.cso");
 	std::shared_ptr<SimplePixelShader> solidColorPS		= LoadShader(SimplePixelShader, L"SolidColorPS.cso");
-	
+
 	std::shared_ptr<SimpleVertexShader> skyVS = LoadShader(SimpleVertexShader, L"SkyVS.cso");
 	std::shared_ptr<SimplePixelShader> skyPS  = LoadShader(SimplePixelShader, L"SkyPS.cso");
 
@@ -145,7 +145,7 @@ void Game::LoadAssetsAndCreateEntities()
 	std::shared_ptr<Mesh> helixMesh = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/helix.obj").c_str(), device);
 	std::shared_ptr<Mesh> cubeMesh = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/cube.obj").c_str(), device);
 	std::shared_ptr<Mesh> coneMesh = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/cone.obj").c_str(), device);
-	
+
 	// Declare the textures we'll need
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleA,  cobbleN,  cobbleR,  cobbleM;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorA,  floorN,  floorR,  floorM;
@@ -165,27 +165,27 @@ void Game::LoadAssetsAndCreateEntities()
 	LoadTexture(L"../../Assets/Textures/floor_normals.png", floorN);
 	LoadTexture(L"../../Assets/Textures/floor_roughness.png", floorR);
 	LoadTexture(L"../../Assets/Textures/floor_metal.png", floorM);
-	
+
 	LoadTexture(L"../../Assets/Textures/paint_albedo.png", paintA);
 	LoadTexture(L"../../Assets/Textures/paint_normals.png", paintN);
 	LoadTexture(L"../../Assets/Textures/paint_roughness.png", paintR);
 	LoadTexture(L"../../Assets/Textures/paint_metal.png", paintM);
-	
+
 	LoadTexture(L"../../Assets/Textures/scratched_albedo.png", scratchedA);
 	LoadTexture(L"../../Assets/Textures/scratched_normals.png", scratchedN);
 	LoadTexture(L"../../Assets/Textures/scratched_roughness.png", scratchedR);
 	LoadTexture(L"../../Assets/Textures/scratched_metal.png", scratchedM);
-	
+
 	LoadTexture(L"../../Assets/Textures/bronze_albedo.png", bronzeA);
 	LoadTexture(L"../../Assets/Textures/bronze_normals.png", bronzeN);
 	LoadTexture(L"../../Assets/Textures/bronze_roughness.png", bronzeR);
 	LoadTexture(L"../../Assets/Textures/bronze_metal.png", bronzeM);
-	
+
 	LoadTexture(L"../../Assets/Textures/rough_albedo.png", roughA);
 	LoadTexture(L"../../Assets/Textures/rough_normals.png", roughN);
 	LoadTexture(L"../../Assets/Textures/rough_roughness.png", roughR);
 	LoadTexture(L"../../Assets/Textures/rough_metal.png", roughM);
-	
+
 	LoadTexture(L"../../Assets/Textures/wood_albedo.png", woodA);
 	LoadTexture(L"../../Assets/Textures/wood_normals.png", woodN);
 	LoadTexture(L"../../Assets/Textures/wood_roughness.png", woodR);
@@ -516,8 +516,8 @@ void Game::Draw(float deltaTime, float totalTime)
 	{
 		// Set the "per frame" data
 		// Note that this should literally be set once PER FRAME, before
-		// the draw loop, but we're currently setting it per entity since 
-		// we are just using whichever shader the current entity has.  
+		// the draw loop, but we're currently setting it per entity since
+		// we are just using whichever shader the current entity has.
 		// Inefficient!!!
 		std::shared_ptr<SimplePixelShader> ps = ge->GetMaterial()->GetPixelShader();
 		ps->SetData("lights", (void*)(&lights[0]), sizeof(Light) * lightCount);
@@ -675,7 +675,7 @@ void Game::BuildUI()
 			ImGui::Text("Scene Details");
 			ImGui::Text("Top Row:");    ImGui::SameLine(125); ImGui::Text("PBR Materials");
 			ImGui::Text("Bottom Row:"); ImGui::SameLine(125); ImGui::Text("Non-PBR Materials");
-	
+
 			// Should we show the demo window?
 			ImGui::Spacing();
 			if (ImGui::Button(showUIDemoWindow ? "Hide ImGui Demo Window" : "Show ImGui Demo Window"))
@@ -686,7 +686,7 @@ void Game::BuildUI()
 			// Finalize the tree node
 			ImGui::TreePop();
 		}
-		
+
 		// === Controls ===
 		if (ImGui::TreeNode("Controls"))
 		{
