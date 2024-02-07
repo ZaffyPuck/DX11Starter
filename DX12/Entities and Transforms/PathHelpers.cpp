@@ -8,13 +8,13 @@
 // --------------------------------------------------------------------------
 // Gets the actual path to this executable as a wide character string (wstring)
 //
-// - As it turns out, the relative path for a program is different when 
-//    running through VS and when running the .exe directly, which makes 
+// - As it turns out, the relative path for a program is different when
+//    running through VS and when running the .exe directly, which makes
 //    it a pain to properly load external files (like textures & shaders)
 //    - Running through VS: Current Dir is the *project folder*
 //    - Running from .exe:  Current Dir is the .exe's folder
-// - This has nothing to do with DEBUG and RELEASE modes - it's purely a 
-//    Visual Studio "thing", and isn't obvious unless you know to look 
+// - This has nothing to do with DEBUG and RELEASE modes - it's purely a
+//    Visual Studio "thing", and isn't obvious unless you know to look
 //    for it.  In fact, it could be fixed by changing a setting in VS, but
 //    that option is stored in a user file (.suo), which is ignored by most
 //    version control packages by default.  Meaning: the option must be
@@ -35,7 +35,7 @@ std::string GetExePath()
 	{
 		// End the string at the last slash character, essentially
 		// chopping off the exe's file name.  Remember, c-strings
-		// are null-terminated, so putting a "zero" character in 
+		// are null-terminated, so putting a "zero" character in
 		// there simply denotes the end of the string.
 		*lastSlash = 0;
 
@@ -52,7 +52,7 @@ std::string GetExePath()
 //  Fixes a relative path so that it is consistently
 //  evaluated from the executable's actual directory
 //  instead of the app's current working directory.
-// 
+//
 //  See the comments of GetExePath() for more details.
 // ----------------------------------------------------
 std::string FixPath(const std::string& relativeFilePath)
@@ -65,13 +65,13 @@ std::string FixPath(const std::string& relativeFilePath)
 //  Fixes a relative path so that it is consistently
 //  evaluated from the executable's actual directory
 //  instead of the app's current working directory.
-// 
+//
 //  See the comments of GetExePath() for more details.
-// 
+//
 //  Note that this overload uses wide character strings
 //  (wstring) instead of standard strings, as most windows
 //  API calls require wide character strings.
-// ---------------------------------------------------- 
+// ----------------------------------------------------
 std::wstring FixPath(const std::wstring& relativeFilePath)
 {
 	return NarrowToWide(GetExePath()) + L"\\" + relativeFilePath;
@@ -79,7 +79,7 @@ std::wstring FixPath(const std::wstring& relativeFilePath)
 
 
 // ----------------------------------------------------
-//  Helper function for converting a wide character 
+//  Helper function for converting a wide character
 //  string to a standard ("narrow") character string
 // ----------------------------------------------------
 std::string WideToNarrow(const std::wstring& str)
@@ -90,7 +90,7 @@ std::string WideToNarrow(const std::wstring& str)
 
 
 // ----------------------------------------------------
-//  Helper function for converting a standard ("narrow") 
+//  Helper function for converting a standard ("narrow")
 //  string to a wide character string
 // ----------------------------------------------------
 std::wstring NarrowToWide(const std::string& str)

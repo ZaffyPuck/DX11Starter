@@ -73,10 +73,7 @@ void Game::Init()
 		5.0f,				// Move speed (world units)
 		0.002f,				// Look speed (cursor movement pixels --> radians for rotation)
 		XM_PIDIV4,			// Field of view
-		(float)windowWidth / windowHeight,  // Aspect ratio
-		0.01f,				// Near clip
-		100.0f,				// Far clip
-		CameraProjectionType::Perspective);
+		(float)windowWidth / windowHeight);
 }
 
 // --------------------------------------------------------
@@ -85,25 +82,26 @@ void Game::Init()
 void Game::LoadAssetsAndCreateEntities()
 {
 	// Make the meshes
+
 	std::shared_ptr<Mesh> sphereMesh = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/sphere.obj").c_str());
-	std::shared_ptr<Mesh> helixMesh = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/helix.obj").c_str());
-	std::shared_ptr<Mesh> cubeMesh = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/cube.obj").c_str());
-	std::shared_ptr<Mesh> coneMesh = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/cone.obj").c_str());
+	//std::shared_ptr<Mesh> helixMesh = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/helix.obj").c_str());
+	//std::shared_ptr<Mesh> cubeMesh = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/cube.obj").c_str());
+	//std::shared_ptr<Mesh> coneMesh = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/cone.obj").c_str());
 
 
 	std::shared_ptr<GameObject> sphere1 = std::make_shared<GameObject>(sphereMesh);
 	sphere1->GetTransform()->SetPosition(-6, 0, 0);
-	std::shared_ptr<GameObject> helix1 = std::make_shared<GameObject>(sphereMesh);
-	sphere1->GetTransform()->SetPosition(-2, 0, 0);
-	std::shared_ptr<GameObject> cube1 = std::make_shared<GameObject>(sphereMesh);
-	sphere1->GetTransform()->SetPosition(2, 0, 0);
-	std::shared_ptr<GameObject> cone1 = std::make_shared<GameObject>(sphereMesh);
-	sphere1->GetTransform()->SetPosition(6, 0, 0);
+	//std::shared_ptr<GameObject> helix1 = std::make_shared<GameObject>(sphereMesh);
+	//sphere1->GetTransform()->SetPosition(-2, 0, 0);
+	//std::shared_ptr<GameObject> cube1 = std::make_shared<GameObject>(sphereMesh);
+	//sphere1->GetTransform()->SetPosition(2, 0, 0);
+	//std::shared_ptr<GameObject> cone1 = std::make_shared<GameObject>(sphereMesh);
+	//sphere1->GetTransform()->SetPosition(6, 0, 0);
 
 	gameObjects.push_back(sphere1);
-	gameObjects.push_back(helix1);
-	gameObjects.push_back(cube1);
-	gameObjects.push_back(cone1);
+	//gameObjects.push_back(helix1);
+	//gameObjects.push_back(cube1);
+	//gameObjects.push_back(cone1);
 }
 
 // --------------------------------------------------------
@@ -118,7 +116,6 @@ void Game::CreateRootSigAndPipelineState()
 	// Load shaders
 	{
 		// Read our compiled vertex shader code into a blob
-		// - Essentially just "open the file and plop its contents here"
 		D3DReadFileToBlob(FixPath(L"VertexShader.cso").c_str(), vertexShaderByteCode.GetAddressOf());
 		D3DReadFileToBlob(FixPath(L"PixelShader.cso").c_str(), pixelShaderByteCode.GetAddressOf());
 	}
@@ -130,14 +127,17 @@ void Game::CreateRootSigAndPipelineState()
 		inputElements[0].Format = DXGI_FORMAT_R32G32B32_FLOAT; // R32 G32 B32 = float3
 		inputElements[0].SemanticName = "POSITION"; // Name must match semantic in shader
 		inputElements[0].SemanticIndex = 0; // This is the first POSITION semantic
+
 		inputElements[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 		inputElements[1].Format = DXGI_FORMAT_R32G32_FLOAT; // R32 G32 = float2
 		inputElements[1].SemanticName = "TEXCOORD";
 		inputElements[1].SemanticIndex = 0; // This is the first TEXCOORD semantic
+
 		inputElements[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 		inputElements[2].Format = DXGI_FORMAT_R32G32B32_FLOAT; // R32 G32 B32 = float3
 		inputElements[2].SemanticName = "NORMAL";
 		inputElements[2].SemanticIndex = 0; // This is the first NORMAL semantic
+
 		inputElements[3].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 		inputElements[3].Format = DXGI_FORMAT_R32G32B32_FLOAT; // R32 G32 B32 = float3
 		inputElements[3].SemanticName = "TANGENT";
@@ -343,9 +343,9 @@ void Game::Draw(float deltaTime, float totalTime)
 			vsExData.view = camera->GetView();
 			vsExData.projection = camera->GetProjection();
 
-			D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = dx12Utility.FillNextConstantBufferAndGetGPUDescriptorHandle(
+			D3D12_GPU_DESCRIPTOR_HANDLE cbHandle = dx12Utility.FillNextConstantBufferAndGetGPUDescriptorHandle(
 				(void*)&vsExData, sizeof(VertexShaderExternalData));
-			commandList->SetGraphicsRootDescriptorTable(0, gpuHandle);
+			commandList->SetGraphicsRootDescriptorTable(0, cbHandle);
 
 			std::shared_ptr<Mesh> mesh = go->GetMesh();
 			D3D12_VERTEX_BUFFER_VIEW vbView = mesh->GetVertexBufferView();

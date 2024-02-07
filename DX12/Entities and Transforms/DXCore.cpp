@@ -182,8 +182,25 @@ HRESULT DXCore::InitDirect3D()
 	debugController->EnableDebugLayer();
 #endif
 
+	// Determine if screen tearing ("vsync off") is available
+	// - This is necessary due to variable refresh rate displays
+	Microsoft::WRL::ComPtr<IDXGIFactory5> factory;
+	if (SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&factory))))
+	{
+		// Check for this specific feature (must use BOOL typedef here!)
+		BOOL tearingSupported = false;
+		HRESULT featureCheck = factory->CheckFeatureSupport(
+			DXGI_FEATURE_PRESENT_ALLOW_TEARING,
+			&tearingSupported,
+			sizeof(tearingSupported));
+
+		// Final determination of support
+		deviceSupportsTearing = SUCCEEDED(featureCheck) && tearingSupported;
+	}
+
 	// Result variable for below function calls
 	HRESULT hr = S_OK;
+
 	// Create the DX 12 device and check the feature level
 	{
 		hr = D3D12CreateDevice(
@@ -191,6 +208,7 @@ HRESULT DXCore::InitDirect3D()
 			D3D_FEATURE_LEVEL_11_0, // MINIMUM feature level - NOT the level we'll turn on
 			IID_PPV_ARGS(device.GetAddressOf())); // Macro to grab necessary IDs of device
 		if (FAILED(hr)) return hr;
+
 		// Now that we have a device, determine the maximum feature level supported by the device
 		D3D_FEATURE_LEVEL levelsToCheck[] = {
 		 D3D_FEATURE_LEVEL_11_0,
@@ -208,17 +226,19 @@ HRESULT DXCore::InitDirect3D()
 		dxFeatureLevel = levels.MaxSupportedFeatureLevel;
 	}
 	// Set up DX12 command allocator / queue / list,
-// which are necessary pieces for issuing standard API calls
+	// which are necessary pieces for issuing standard API calls
 	{
 		// Set up allocator
 		device->CreateCommandAllocator(
 			D3D12_COMMAND_LIST_TYPE_DIRECT,
 			IID_PPV_ARGS(commandAllocator.GetAddressOf()));
+
 		// Command queue
 		D3D12_COMMAND_QUEUE_DESC qDesc = {};
 		qDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 		qDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 		device->CreateCommandQueue(&qDesc, IID_PPV_ARGS(commandQueue.GetAddressOf()));
+
 		// Command list
 		device->CreateCommandList(
 			0, // Which physical GPU will handle these tasks? 0 for single GPU setup
@@ -239,19 +259,6 @@ HRESULT DXCore::InitDirect3D()
 	}
 	// Swap chain creation
 	{
-		// Create a DXGI factory, which is what we use to create a swap chain
-		Microsoft::WRL::ComPtr<IDXGIFactory6> dxgiFactory;
-		CreateDXGIFactory(IID_PPV_ARGS(dxgiFactory.GetAddressOf()));
-
-		// Determine if screen tearing ("vsync off") is available
-		// - This is necessary due to variable refresh rate displays
-		BOOL tearingSupported = false;
-		HRESULT featureCheck = dxgiFactory->CheckFeatureSupport(
-			DXGI_FEATURE_PRESENT_ALLOW_TEARING,
-			&tearingSupported,
-			sizeof(tearingSupported));
-		deviceSupportsTearing = SUCCEEDED(featureCheck) && tearingSupported;
-
 		// Create a description of how our swap chain should work
 		DXGI_SWAP_CHAIN_DESC swapDesc = {};
 		swapDesc.BufferCount = numBackBuffers;
@@ -270,6 +277,10 @@ HRESULT DXCore::InitDirect3D()
 		swapDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swapDesc.Windowed = true;
 
+		// Create a DXGI factory, which is what we use to create a swap chain
+		Microsoft::WRL::ComPtr<IDXGIFactory6> dxgiFactory;
+		CreateDXGIFactory(IID_PPV_ARGS(dxgiFactory.GetAddressOf()));
+
 		// Create swap chain
 		hr = dxgiFactory->CreateSwapChain(commandQueue.Get(), &swapDesc, swapChain.GetAddressOf());
 	}
@@ -279,19 +290,23 @@ HRESULT DXCore::InitDirect3D()
 		// descriptor heap? This differs per GPU so we need to
 		// get it at applications start up
 		rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
 		// First create a descriptor heap for RTVs
 		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
 		rtvHeapDesc.NumDescriptors = numBackBuffers;
 		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 		device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(rtvHeap.GetAddressOf()));
+
 		// Now create the RTV handles for each buffer (buffers were created by the swap chain)
 		for (unsigned int i = 0; i < numBackBuffers; i++)
 		{
 			// Grab this buffer from the swap chain
 			swapChain->GetBuffer(i, IID_PPV_ARGS(backBuffers[i].GetAddressOf()));
+
 			// Make a handle for it
 			rtvHandles[i] = rtvHeap->GetCPUDescriptorHandleForHeapStart();
 			rtvHandles[i].ptr += rtvDescriptorSize * i;
+
 			// Create the render target view
 			device->CreateRenderTargetView(backBuffers[i].Get(), 0, rtvHandles[i]);
 		}
@@ -303,6 +318,7 @@ HRESULT DXCore::InitDirect3D()
 		dsvHeapDesc.NumDescriptors = 1;
 		dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 		device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(dsvHeap.GetAddressOf()));
+
 		// Describe the depth stencil buffer resource
 		D3D12_RESOURCE_DESC depthBufferDesc = {};
 		depthBufferDesc.Alignment = 0;
@@ -316,12 +332,14 @@ HRESULT DXCore::InitDirect3D()
 		depthBufferDesc.SampleDesc.Count = 1;
 		depthBufferDesc.SampleDesc.Quality = 0;
 		depthBufferDesc.Width = windowWidth;
+
 		// Describe the clear value that will most often be used
 		// for this buffer (which optimizes the clearing of the buffer)
 		D3D12_CLEAR_VALUE clear = {};
 		clear.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		clear.DepthStencil.Depth = 1.0f;
 		clear.DepthStencil.Stencil = 0;
+
 		// Describe the memory heap that will house this resource
 		D3D12_HEAP_PROPERTIES props = {};
 		props.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
@@ -329,6 +347,7 @@ HRESULT DXCore::InitDirect3D()
 		props.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
 		props.Type = D3D12_HEAP_TYPE_DEFAULT;
 		props.VisibleNodeMask = 1;
+
 		// Actually create the resource, and the heap in which it
 		// will reside, and map the resource to that heap
 		device->CreateCommittedResource(
@@ -338,16 +357,19 @@ HRESULT DXCore::InitDirect3D()
 			D3D12_RESOURCE_STATE_DEPTH_WRITE,
 			&clear,
 			IID_PPV_ARGS(depthStencilBuffer.GetAddressOf()));
+
 		// Get the handle to the Depth Stencil View that we'll
 		// be using for the depth buffer. The DSV is stored in
 		// our DSV-specific descriptor Heap.
 		dsvHandle = dsvHeap->GetCPUDescriptorHandleForHeapStart();
+
 		// Actually make the DSV
 		device->CreateDepthStencilView(
 			depthStencilBuffer.Get(),
 			0, // Default view (first mip)
 			dsvHandle);
 	}
+
 	// Set up the viewport so we render into the correct
 	// portion of the render target
 	viewport = {};
@@ -357,6 +379,7 @@ HRESULT DXCore::InitDirect3D()
 	viewport.Height = (float)windowHeight;
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
+
 	// Define a scissor rectangle that defines a portion of
 	// the render target for clipping. This is different from
 	// a viewport in that it is applied after the pixel shader.
@@ -386,9 +409,11 @@ void DXCore::OnResize()
 	// Wait for the GPU to finish all work, since we'll
 // be destroying and recreating resources
 	DX12Utility::GetInstance().WaitForGPU();
+
 	// Release the back buffers using ComPtr's Reset()
 	for (unsigned int i = 0; i < numBackBuffers; i++)
 		backBuffers[i].Reset();
+
 	// Resize the swap chain (assuming a basic color format here)
 	swapChain->ResizeBuffers(
 		numBackBuffers,
@@ -396,6 +421,7 @@ void DXCore::OnResize()
 		windowHeight,
 		DXGI_FORMAT_R8G8B8A8_UNORM,
 		deviceSupportsTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
+
 	// Go through the steps to setup the back buffers again
 	// Note: This assumes the descriptor heap already exists
 	// and that the rtvDescriptorSize was previously set
@@ -403,17 +429,22 @@ void DXCore::OnResize()
 	{
 		// Grab this buffer from the swap chain
 		swapChain->GetBuffer(i, IID_PPV_ARGS(backBuffers[i].GetAddressOf()));
+
 		// Make a handle for it
 		rtvHandles[i] = rtvHeap->GetCPUDescriptorHandleForHeapStart();
 		rtvHandles[i].ptr += rtvDescriptorSize * i;
+
 		// Create the render target view
 		device->CreateRenderTargetView(backBuffers[i].Get(), 0, rtvHandles[i]);
 	}
+
 	// Reset back to the first back buffer
 	currentSwapBuffer = 0;
+
 	// Reset the depth buffer and create it again
 	{
 		depthStencilBuffer.Reset();
+
 		// Describe the depth stencil buffer resource
 		D3D12_RESOURCE_DESC depthBufferDesc = {};
 		depthBufferDesc.Alignment = 0;
@@ -427,12 +458,14 @@ void DXCore::OnResize()
 		depthBufferDesc.SampleDesc.Count = 1;
 		depthBufferDesc.SampleDesc.Quality = 0;
 		depthBufferDesc.Width = windowWidth;
+
 		// Describe the clear value that will most often be used
 		// for this buffer (which optimizes the clearing of the buffer)
 		D3D12_CLEAR_VALUE clear = {};
 		clear.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		clear.DepthStencil.Depth = 1.0f;
 		clear.DepthStencil.Stencil = 0;
+
 		// Describe the memory heap that will house this resource
 		D3D12_HEAP_PROPERTIES props = {};
 		props.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
@@ -440,6 +473,7 @@ void DXCore::OnResize()
 		props.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
 		props.Type = D3D12_HEAP_TYPE_DEFAULT;
 		props.VisibleNodeMask = 1;
+
 		// Actually create the resource, and the heap in which it
 		// will reside, and map the resource to that heap
 		device->CreateCommittedResource(
@@ -449,6 +483,7 @@ void DXCore::OnResize()
 			D3D12_RESOURCE_STATE_DEPTH_WRITE,
 			&clear,
 			IID_PPV_ARGS(depthStencilBuffer.GetAddressOf()));
+
 		// Now recreate the depth stencil view
 		dsvHandle = dsvHeap->GetCPUDescriptorHandleForHeapStart();
 		device->CreateDepthStencilView(
@@ -456,6 +491,7 @@ void DXCore::OnResize()
 			0, // Default view (first mip)
 			dsvHandle);
 	}
+
 	// Recreate the viewport and scissor rects, too,
 	// since the window size has changed
 	{
@@ -466,8 +502,10 @@ void DXCore::OnResize()
 		scissorRect.right = windowWidth;
 		scissorRect.bottom = windowHeight;
 	}
+
 	// Are we in a fullscreen state?
 	swapChain->GetFullscreenState(&isFullscreen, 0);
+
 	// Wait for the GPU before we proceed
 	DX12Utility::GetInstance().WaitForGPU();
 }

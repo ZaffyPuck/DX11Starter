@@ -98,7 +98,6 @@ void Camera::Update(float dt)
 
 	// Update the view every frame - could be optimized
 	UpdateViewMatrix();
-
 }
 
 // Creates a new view matrix based on current position and orientation

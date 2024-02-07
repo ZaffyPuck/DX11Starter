@@ -209,13 +209,13 @@ void Mesh::CreateBuffers(Vertex* vertices, size_t vertexCount, UINT* indices, si
 	indexBuffer = dx12Utility.CreateStaticBuffer(sizeof(unsigned int), indexCount, indices);
 
 	// Set up the views
-	vbView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
 	vbView.StrideInBytes = sizeof(Vertex);
 	vbView.SizeInBytes = sizeof(Vertex) * vertexCount;
+	vbView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
 
-	ibView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
 	ibView.Format = DXGI_FORMAT_R32_UINT;
 	ibView.SizeInBytes = sizeof(unsigned int) * indexCount;
+	ibView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
 }
 
 // --------------------------------------------------------
