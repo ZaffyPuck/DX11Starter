@@ -7,12 +7,13 @@
 #include "SimpleShader.h"
 #include "Lights.h"
 #include "Sky.h"
+#include "Emitter.h"
 
 #include <DirectXMath.h>
 #include <wrl/client.h>
 #include <vector>
 
-class Game 
+class Game
 	: public DXCore
 {
 
@@ -35,6 +36,7 @@ private:
 
 	// Lights
 	std::vector<Light> lights;
+	DirectX::XMFLOAT3 ambientColor;
 	int lightCount;
 	bool showPointLights;
 
@@ -50,6 +52,12 @@ private:
 	// Skybox
 	std::shared_ptr<Sky> sky;
 
+	// Emitters
+	std::vector<std::shared_ptr<Emitter>> emitters;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> particleDepthState;
+	Microsoft::WRL::ComPtr<ID3D11BlendState> particleBlendState;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> particleDebugRasterState;
+
 	// General helpers for setup and drawing
 	void LoadAssetsAndCreateEntities();
 	void GenerateLights();
@@ -59,9 +67,9 @@ private:
 	void UINewFrame(float deltaTime);
 	void BuildUI();
 	void CameraUI(std::shared_ptr<Camera> cam);
-	void EntityUI(std::shared_ptr<GameEntity> entity);	
+	void EntityUI(std::shared_ptr<GameEntity> entity);
 	void LightUI(Light& light);
-	
+
 	// Should the ImGui demo window be shown?
 	bool showUIDemoWindow;
 };

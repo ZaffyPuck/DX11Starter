@@ -1,13 +1,13 @@
 #include "DXCore.h"
 #include "Input.h"
-#include "ImGui/imgui.h"
-#include "ImGui/imgui_impl_win32.h"
+#include "../../ImGui/imgui.h"
+#include "../../ImGui/imgui_impl_win32.h"
 
 #include <dxgi1_5.h>
 #include <WindowsX.h>
 #include <sstream>
 
-// Define the static instance variable so our OS-level 
+// Define the static instance variable so our OS-level
 // message handling function below can talk to our object
 DXCore* DXCore::DXCoreInstance = 0;
 
@@ -59,7 +59,7 @@ DXCore::DXCore(
 	hWnd(0)
 {
 	// Save a static reference to this object.
-	//  - Since the OS-level message function must be a non-member (global) function, 
+	//  - Since the OS-level message function must be a non-member (global) function,
 	//    it won't be able to directly interact with our DXCore object otherwise.
 	//  - (Yes, a singleton might be a safer choice here).
 	DXCoreInstance = this;
@@ -89,11 +89,13 @@ DXCore::~DXCore()
 // --------------------------------------------------------
 HRESULT DXCore::InitWindow()
 {
-	// Start window creation by filling out the
-	// appropriate window class struct
+	// Register the window class.
+	const wchar_t CLASS_NAME[] = L"Sample Window Class";
+
+	// Start window creation by filling out the appropriate window class struct
 	WNDCLASS wndClass		= {}; // Zero out the memory
 	wndClass.style			= CS_HREDRAW | CS_VREDRAW;	// Redraw on horizontal or vertical movement/adjustment
-	wndClass.lpfnWndProc	= DXCore::WindowProc;
+	wndClass.lpfnWndProc	= WindowProc;
 	wndClass.cbClsExtra		= 0;
 	wndClass.cbWndExtra		= 0;
 	wndClass.hInstance		= hInstance;						// Our app's handle
@@ -101,7 +103,21 @@ HRESULT DXCore::InitWindow()
 	wndClass.hCursor		= LoadCursor(NULL, IDC_ARROW);		// Default arrow cursor
 	wndClass.hbrBackground	= (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wndClass.lpszMenuName	= NULL;
-	wndClass.lpszClassName	= L"Direct3DWindowClass"; // The "L" means this is a wide-character string
+	wndClass.lpszClassName	= CLASS_NAME;
+
+	//WNDCLASSEX wcex = {};
+	//wcex.cbSize = sizeof(WNDCLASSEX);
+	//wcex.style = CS_HREDRAW | CS_VREDRAW;
+	//wcex.lpfnWndProc = DXCore::WindowProc;
+	//wcex.cbClsExtra = 0;
+	//wcex.cbWndExtra = 0;
+	//wcex.hInstance = hInstance;
+	//wcex.hIcon = LoadIcon(wcex.hInstance, IDI_APPLICATION);
+	//wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+	//wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	//wcex.lpszMenuName = NULL;
+	//wcex.lpszClassName = CLASS_NAME;
+	//wcex.hIconSm = LoadIcon(wcex.hInstance, IDI_APPLICATION);
 
 	// Attempt to register the window class we've defined
 	if (!RegisterClass(&wndClass))
@@ -127,24 +143,29 @@ HRESULT DXCore::InitWindow()
 	// Center the window to the screen
 	RECT desktopRect;
 	GetClientRect(GetDesktopWindow(), &desktopRect);
-	int centeredX = (desktopRect.right / 2) - (clientRect.right / 2);
-	int centeredY = (desktopRect.bottom / 2) - (clientRect.bottom / 2);
+	// Positioned to center of screen
+	int positionX = (desktopRect.right / 2) - (clientRect.right / 2);
+	int positionY = (desktopRect.bottom / 2) - (clientRect.bottom / 2);
+	// Not sure how big
+	int sizeX = clientRect.right - clientRect.left;
+	int sizeY = clientRect.bottom - clientRect.top;
 
 	// Actually ask Windows to create the window itself
 	// using our settings so far.  This will return the
 	// handle of the window, which we'll keep around for later
-	hWnd = CreateWindow(
-		wndClass.lpszClassName,
-		titleBarText.c_str(),
-		WS_OVERLAPPEDWINDOW,
-		centeredX,
-		centeredY,
-		clientRect.right - clientRect.left,	// Calculated width
-		clientRect.bottom - clientRect.top,	// Calculated height
-		0,			// No parent window
-		0,			// No menu
-		hInstance,	// The app's handle
-		0);			// No other windows in our application
+	hWnd = CreateWindowEx(
+		0L, //WS_EX_OVERLAPPEDWINDOW
+		CLASS_NAME,				// Window class
+		titleBarText.c_str(),	// Window text
+		WS_OVERLAPPEDWINDOW,	// Window style
+		//CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+		positionX, positionY,	// Window position
+		sizeX, sizeY,			// Window size
+		NULL,					// Parent window (None)
+		NULL,					// Menu (None)
+		hInstance,				// The instanced app's handle
+		NULL					// No other windows or additional application data
+	);
 
 	// Ensure the window was created properly
 	if (hWnd == NULL)
@@ -167,7 +188,7 @@ HRESULT DXCore::InitWindow()
 
 // --------------------------------------------------------
 // Initializes Direct3D, which requires a window.  This method
-// also creates several common Direct3D objects we'll need to 
+// also creates several common Direct3D objects we'll need to
 // start drawing things to the screen.
 // --------------------------------------------------------
 HRESULT DXCore::InitDirect3D()
@@ -275,7 +296,7 @@ HRESULT DXCore::InitDirect3D()
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> depthBufferTexture;
 		device->CreateTexture2D(&depthStencilDesc, 0, depthBufferTexture.GetAddressOf());
 
-		// As long as the depth buffer texture was created successfully, 
+		// As long as the depth buffer texture was created successfully,
 		// create the associated Depth Stencil View so we can use it for rendering
 		if (depthBufferTexture != 0)
 		{
@@ -286,8 +307,8 @@ HRESULT DXCore::InitDirect3D()
 	// Bind the back buffer and depth buffer to the pipeline
 	// so these particular resources are used when rendering
 	context->OMSetRenderTargets(
-		1, 
-		backBufferRTV.GetAddressOf(), 
+		1,
+		backBufferRTV.GetAddressOf(),
 		depthBufferDSV.Get());
 
 	// Lastly, set up a viewport so we render into
@@ -306,7 +327,7 @@ HRESULT DXCore::InitDirect3D()
 }
 
 // --------------------------------------------------------
-// When the window is resized, the underlying 
+// When the window is resized, the underlying
 // buffers (textures) must also be resized to match.
 //
 // If we don't do this, the window size and our rendering
@@ -366,7 +387,7 @@ void DXCore::OnResize()
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> depthBufferTexture;
 		device->CreateTexture2D(&depthStencilDesc, 0, depthBufferTexture.GetAddressOf());
 
-		// As long as the depth buffer texture was created successfully, 
+		// As long as the depth buffer texture was created successfully,
 		// create the associated Depth Stencil View so we can use it for rendering
 		if (depthBufferTexture != 0)
 		{
@@ -401,8 +422,7 @@ void DXCore::OnResize()
 // --------------------------------------------------------
 HRESULT DXCore::Run()
 {
-	// Grab the start time now that
-	// the game loop is running
+	// Grab the start time now that the game loop is running
 	__int64 now = 0;
 	QueryPerformanceCounter((LARGE_INTEGER*)&now);
 	startTime = now;
@@ -417,19 +437,20 @@ HRESULT DXCore::Run()
 	while (msg.message != WM_QUIT)
 	{
 		// Determine if there is a message waiting
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		if (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
 		{
-			// Translate and dispatch the message
-			// to our custom WindowProc function
+			// Translate and dispatch the message to our custom WindowProc function
 			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			DispatchMessageW(&msg);
 		}
 		else
 		{
 			// Update timer and title bar (if necessary)
 			UpdateTimer();
-			if(titleBarStats)
+			if (titleBarStats)
+			{
 				UpdateTitleBarStats();
+			}
 
 			// Update the input manager
 			Input::GetInstance().Update();
@@ -448,7 +469,6 @@ HRESULT DXCore::Run()
 	return (HRESULT)msg.wParam;
 }
 
-
 // --------------------------------------------------------
 // Sends an OS-level window close message to our process, which
 // will be handled by our message processing function
@@ -457,7 +477,6 @@ void DXCore::Quit()
 {
 	PostMessage(this->hWnd, WM_CLOSE, NULL, NULL);
 }
-
 
 // --------------------------------------------------------
 // Uses high resolution time stamps to get very accurate
@@ -471,7 +490,7 @@ void DXCore::UpdateTimer()
 	currentTime = now;
 
 	// Calculate delta time and clamp to zero
-	//  - Could go negative if CPU goes into power save mode 
+	//  - Could go negative if CPU goes into power save mode
 	//    or the process itself gets moved to another core
 	deltaTime = max((float)((currentTime - previousTime) * perfCounterSeconds), 0.0f);
 
@@ -481,7 +500,6 @@ void DXCore::UpdateTimer()
 	// Save current time for next frame
 	previousTime = currentTime;
 }
-
 
 // --------------------------------------------------------
 // Updates the window's title bar with several stats once
@@ -532,7 +550,7 @@ void DXCore::UpdateTitleBarStats()
 
 // --------------------------------------------------------
 // Allocates a console window we can print to for debugging
-// 
+//
 // bufferLines   - Number of lines in the overall console buffer
 // bufferColumns - Numbers of columns in the overall console buffer
 // windowLines   - Number of lines visible at once in the window
@@ -540,23 +558,28 @@ void DXCore::UpdateTitleBarStats()
 // --------------------------------------------------------
 void DXCore::CreateConsoleWindow(int bufferLines, int bufferColumns, int windowLines, int windowColumns)
 {
-	// Our temp console info struct
-	CONSOLE_SCREEN_BUFFER_INFO coninfo;
-
-	// Get the console info and set the number of lines
+	// Generate a console window
 	AllocConsole();
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
+
+	// Retrieve a handle to the specified standard device
+	HANDLE stdOutputHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	// Set console screen buffer attributes
+	CONSOLE_SCREEN_BUFFER_INFO coninfo; // Our temp console info struct
+	GetConsoleScreenBufferInfo(stdOutputHandle, &coninfo);
 	coninfo.dwSize.Y = bufferLines;
 	coninfo.dwSize.X = bufferColumns;
-	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
+	SetConsoleScreenBufferSize(stdOutputHandle, coninfo.dwSize);
 
+	// Set console window attributes
 	SMALL_RECT rect = {};
 	rect.Left = 0;
 	rect.Top = 0;
 	rect.Right = windowColumns;
 	rect.Bottom = windowLines;
-	SetConsoleWindowInfo(GetStdHandle(STD_OUTPUT_HANDLE), TRUE, &rect);
+	SetConsoleWindowInfo(stdOutputHandle, TRUE, &rect);
 
+	// Link streams to console
 	FILE *stream;
 	freopen_s(&stream, "CONIN$", "r", stdin);
 	freopen_s(&stream, "CONOUT$", "w", stdout);
@@ -564,11 +587,9 @@ void DXCore::CreateConsoleWindow(int bufferLines, int bufferColumns, int windowL
 
 	// Prevent accidental console window close
 	HWND consoleHandle = GetConsoleWindow();
-	HMENU hmenu = GetSystemMenu(consoleHandle, FALSE);
-	EnableMenuItem(hmenu, SC_CLOSE, MF_GRAYED);
+	HMENU hMenu = GetSystemMenu(consoleHandle, FALSE);
+	EnableMenuItem(hMenu, SC_CLOSE, MF_GRAYED);
 }
-
-
 
 // --------------------------------------------------------
 // Handles messages that are sent to our window by the
@@ -592,7 +613,7 @@ LRESULT DXCore::ProcessMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		return 0;
 
 	// Prevent beeping when we "alt-enter" into fullscreen
-	case WM_MENUCHAR: 
+	case WM_MENUCHAR:
 		return MAKELRESULT(0, MNC_CLOSE);
 
 	// Prevent the overall window from becoming too small
@@ -606,17 +627,18 @@ LRESULT DXCore::ProcessMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		// Don't adjust anything when minimizing,
 		// since we end up with a width/height of zero
 		// and that doesn't play well with the GPU
-		if (wParam == SIZE_MINIMIZED)
-			return 0;
-		
-		// Save the new client area dimensions.
-		windowWidth = LOWORD(lParam);
-		windowHeight = HIWORD(lParam);
+		if (wParam != SIZE_MINIMIZED)
+		{
+			// Save the new client area dimensions.
+			windowWidth = GET_X_LPARAM(lParam);
+			windowHeight = GET_Y_LPARAM(lParam);
 
-		// If DX is initialized, resize 
-		// our required buffers
-		if (device) 
-			OnResize();
+			// If DX is initialized, resize our required buffers
+			if (device)
+			{
+				OnResize();
+			}
+		}
 
 		return 0;
 
@@ -629,14 +651,31 @@ LRESULT DXCore::ProcessMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	case WM_INPUT:
 		Input::GetInstance().ProcessRawMouseInput(lParam);
 		break;
-	
+
 	// Is our focus state changing?
 	case WM_SETFOCUS:	hasFocus = true;	return 0;
 	case WM_KILLFOCUS:	hasFocus = false;	return 0;
 	case WM_ACTIVATE:	hasFocus = (LOWORD(wParam) != WA_INACTIVE); return 0;
+
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hWnd, &ps);
+		FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+		EndPaint(hWnd, &ps);
+		return 0;
+	}
+	case WM_CLOSE:
+		//if (MessageBox(hWnd, L"Really quit?", L"My application", MB_OKCANCEL) == IDOK)
+		//{
+			DestroyWindow(hWnd);
+			FreeConsole();
+		//}
+		return 0;
+	default:
+		// Let Windows handle any messages we're not touching
+		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
 
-	// Let Windows handle any messages we're not touching
-	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+	return TRUE;
 }
-

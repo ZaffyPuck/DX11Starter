@@ -48,7 +48,8 @@ Game::Game(HINSTANCE hInstance)
 	sky(0),
 	lightCount(0),
 	showUIDemoWindow(false),
-	showPointLights(false)
+	showPointLights(false),
+	ambientColor(0,0,0)
 {
 	// Seed random
 	srand((unsigned int)time(0));
@@ -142,9 +143,7 @@ void Game::LoadAssetsAndCreateEntities()
 
 	// Make the meshes
 	std::shared_ptr<Mesh> sphereMesh = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/sphere.obj").c_str(), device);
-	std::shared_ptr<Mesh> helixMesh = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/helix.obj").c_str(), device);
 	std::shared_ptr<Mesh> cubeMesh = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/cube.obj").c_str(), device);
-	std::shared_ptr<Mesh> coneMesh = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/cone.obj").c_str(), device);
 
 	// Declare the textures we'll need
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleA,  cobbleN,  cobbleR,  cobbleM;
@@ -324,72 +323,34 @@ void Game::LoadAssetsAndCreateEntities()
 	woodMatPBR->AddTextureSRV("RoughnessMap", woodR);
 	woodMatPBR->AddTextureSRV("MetalMap", woodM);
 
-
-
-	// === Create the PBR entities =====================================
-	std::shared_ptr<GameEntity> cobSpherePBR = std::make_shared<GameEntity>(sphereMesh, cobbleMat2xPBR);
-	cobSpherePBR->GetTransform()->SetPosition(-6, 2, 0);
-	cobSpherePBR->GetTransform()->SetScale(2, 2, 2);
-
-	std::shared_ptr<GameEntity> floorSpherePBR = std::make_shared<GameEntity>(sphereMesh, floorMatPBR);
-	floorSpherePBR->GetTransform()->SetPosition(-4, 2, 0);
-	floorSpherePBR->GetTransform()->SetScale(2, 2, 2);
-
-	std::shared_ptr<GameEntity> paintSpherePBR = std::make_shared<GameEntity>(sphereMesh, paintMatPBR);
-	paintSpherePBR->GetTransform()->SetPosition(-2, 2, 0);
-	paintSpherePBR->GetTransform()->SetScale(2, 2, 2);
-
-	std::shared_ptr<GameEntity> scratchSpherePBR = std::make_shared<GameEntity>(sphereMesh, scratchedMatPBR);
-	scratchSpherePBR->GetTransform()->SetPosition(0, 2, 0);
-	scratchSpherePBR->GetTransform()->SetScale(2, 2, 2);
-
-	std::shared_ptr<GameEntity> bronzeSpherePBR = std::make_shared<GameEntity>(sphereMesh, bronzeMatPBR);
-	bronzeSpherePBR->GetTransform()->SetPosition(2, 2, 0);
-	bronzeSpherePBR->GetTransform()->SetScale(2, 2, 2);
-
-	std::shared_ptr<GameEntity> roughSpherePBR = std::make_shared<GameEntity>(sphereMesh, roughMatPBR);
-	roughSpherePBR->GetTransform()->SetPosition(4, 2, 0);
-	roughSpherePBR->GetTransform()->SetScale(2, 2, 2);
-
-	std::shared_ptr<GameEntity> woodSpherePBR = std::make_shared<GameEntity>(sphereMesh, woodMatPBR);
-	woodSpherePBR->GetTransform()->SetPosition(6, 2, 0);
-	woodSpherePBR->GetTransform()->SetScale(2, 2, 2);
-
-	entities.push_back(cobSpherePBR);
-	entities.push_back(floorSpherePBR);
-	entities.push_back(paintSpherePBR);
-	entities.push_back(scratchSpherePBR);
-	entities.push_back(bronzeSpherePBR);
-	entities.push_back(roughSpherePBR);
-	entities.push_back(woodSpherePBR);
-
 	// Create the non-PBR entities ==============================
+	float elementDepth = 10.f;
 	std::shared_ptr<GameEntity> cobSphere = std::make_shared<GameEntity>(sphereMesh, cobbleMat2x);
-	cobSphere->GetTransform()->SetPosition(-6, -2, 0);
+	cobSphere->GetTransform()->SetPosition(-6, -2, elementDepth);
 	cobSphere->GetTransform()->SetScale(2, 2, 2);
 
 	std::shared_ptr<GameEntity> floorSphere = std::make_shared<GameEntity>(sphereMesh, floorMat);
-	floorSphere->GetTransform()->SetPosition(-4, -2, 0);
+	floorSphere->GetTransform()->SetPosition(-4, -2, elementDepth);
 	floorSphere->GetTransform()->SetScale(2, 2, 2);
 
 	std::shared_ptr<GameEntity> paintSphere = std::make_shared<GameEntity>(sphereMesh, paintMat);
-	paintSphere->GetTransform()->SetPosition(-2, -2, 0);
+	paintSphere->GetTransform()->SetPosition(-2, -2, elementDepth);
 	paintSphere->GetTransform()->SetScale(2, 2, 2);
 
 	std::shared_ptr<GameEntity> scratchSphere = std::make_shared<GameEntity>(sphereMesh, scratchedMat);
-	scratchSphere->GetTransform()->SetPosition(0, -2, 0);
+	scratchSphere->GetTransform()->SetPosition(0, -2, elementDepth);
 	scratchSphere->GetTransform()->SetScale(2, 2, 2);
 
 	std::shared_ptr<GameEntity> bronzeSphere = std::make_shared<GameEntity>(sphereMesh, bronzeMat);
-	bronzeSphere->GetTransform()->SetPosition(2, -2, 0);
+	bronzeSphere->GetTransform()->SetPosition(2, -2, elementDepth);
 	bronzeSphere->GetTransform()->SetScale(2, 2, 2);
 
 	std::shared_ptr<GameEntity> roughSphere = std::make_shared<GameEntity>(sphereMesh, roughMat);
-	roughSphere->GetTransform()->SetPosition(4, -2, 0);
+	roughSphere->GetTransform()->SetPosition(4, -2, elementDepth);
 	roughSphere->GetTransform()->SetScale(2, 2, 2);
 
 	std::shared_ptr<GameEntity> woodSphere = std::make_shared<GameEntity>(sphereMesh, woodMat);
-	woodSphere->GetTransform()->SetPosition(6, -2, 0);
+	woodSphere->GetTransform()->SetPosition(6, -2, elementDepth);
 	woodSphere->GetTransform()->SetScale(2, 2, 2);
 
 	entities.push_back(cobSphere);
@@ -400,11 +361,275 @@ void Game::LoadAssetsAndCreateEntities()
 	entities.push_back(roughSphere);
 	entities.push_back(woodSphere);
 
-
 	// Save assets needed for drawing point lights
 	lightMesh = sphereMesh;
 	lightVS = vertexShader;
 	lightPS = solidColorPS;
+
+	// Particle stuff
+	// Grab loaded particle resources
+	std::shared_ptr<SimpleVertexShader> particleVS = LoadShader(SimpleVertexShader, L"ParticleVS.cso");
+	std::shared_ptr<SimplePixelShader> particlePS = LoadShader(SimplePixelShader, L"ParticlePS.cso");
+
+	// Create particle materials
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> fireParticleSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> twirlParticleSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> starParticleSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> sparkParticleSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> animParticleSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> explParticleSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> runParticleSRV;
+	LoadTexture(L"../../Assets/Particles/PNG (Transparent)/fire_01.png", fireParticleSRV);
+	LoadTexture(L"../../Assets/Particles/PNG (Transparent)/twirl_03.png", twirlParticleSRV);
+	LoadTexture(L"../../Assets/Particles/PNG (Transparent)/star_04.png", starParticleSRV);
+	LoadTexture(L"../../Assets/Particles/PNG (Transparent)/spark_05.png", sparkParticleSRV);
+	LoadTexture(L"../../Assets/Particles/flame_animated.png", animParticleSRV);
+	LoadTexture(L"../../Assets/Particles/explosion_animated.png", explParticleSRV);
+	LoadTexture(L"../../Assets/Particles/running_animated.png", runParticleSRV);
+
+	std::shared_ptr<Material> fireParticle = std::make_shared<Material>(particlePS, particleVS, XMFLOAT3(1, 1, 1));
+	fireParticle->AddSampler("BasicSampler", samplerOptions);
+	fireParticle->AddTextureSRV("Particle", fireParticleSRV);
+
+	std::shared_ptr<Material> twirlParticle = std::make_shared<Material>(particlePS, particleVS, XMFLOAT3(1, 1, 1));
+	twirlParticle->AddSampler("BasicSampler", samplerOptions);
+	twirlParticle->AddTextureSRV("Particle", twirlParticleSRV);
+
+	std::shared_ptr<Material> starParticle = std::make_shared<Material>(particlePS, particleVS, XMFLOAT3(1, 1, 1));
+	starParticle->AddSampler("BasicSampler", samplerOptions);
+	starParticle->AddTextureSRV("Particle", starParticleSRV);
+
+	std::shared_ptr<Material> animParticle = std::make_shared<Material>(particlePS, particleVS, XMFLOAT3(1, 1, 1));
+	animParticle->AddSampler("BasicSampler", samplerOptions);
+	animParticle->AddTextureSRV("Particle", animParticleSRV);
+
+	std::shared_ptr<Material> explParticle = std::make_shared<Material>(particlePS, particleVS, XMFLOAT3(1, 1, 1));
+	explParticle->AddSampler("BasicSampler", samplerOptions);
+	explParticle->AddTextureSRV("Particle", explParticleSRV);
+
+	std::shared_ptr<Material> runParticle = std::make_shared<Material>(particlePS, particleVS, XMFLOAT3(1, 1, 1));
+	runParticle->AddSampler("BasicSampler", samplerOptions);
+	runParticle->AddTextureSRV("Particle", runParticleSRV);
+
+	std::shared_ptr<Material> sparkParticle = std::make_shared<Material>(particlePS, particleVS, XMFLOAT3(1, 1, 1));
+	sparkParticle->AddSampler("BasicSampler", samplerOptions);
+	sparkParticle->AddTextureSRV("Particle", sparkParticleSRV);
+
+	// Particle states ====
+
+	// A depth state for the particles
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // Turns off depth writing
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	device->CreateDepthStencilState(&dsDesc, particleDepthState.GetAddressOf());
+
+	// Blend for particles (additive)
+	D3D11_BLEND_DESC blend = {};
+	blend.AlphaToCoverageEnable = false;
+	blend.IndependentBlendEnable = false;
+	blend.RenderTarget[0].BlendEnable = true;
+	blend.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA; // Still respect pixel shader output alpha
+	blend.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	device->CreateBlendState(&blend, particleBlendState.GetAddressOf());
+
+	// Debug rasterizer state for particles
+	D3D11_RASTERIZER_DESC rd = {};
+	rd.CullMode = D3D11_CULL_BACK;
+	rd.DepthClipEnable = true;
+	rd.FillMode = D3D11_FILL_WIREFRAME;
+	device->CreateRasterizerState(&rd, particleDebugRasterState.GetAddressOf());
+
+	// PE1 - Single Waterfall
+	emitters.push_back(std::make_shared<Emitter>(
+		device,			// Device
+		fireParticle,	// Material
+		100,			// Particle capacity
+		3.f,			// Particle lifetime
+		30,				// Particles per second
+		0.1f,			// Start size
+		2.0f,			// End size
+		false,			// lock y axis
+		XMFLOAT4(0.1f, 0.1f, 1.0f, 0.9f),	// Start color
+		XMFLOAT4(0.5f, 0.5f, 0.5f, 0),		// End color
+		XMFLOAT3(-4, -1, 0),				// Emitter position
+		XMFLOAT3(0.1f, 0.1f, 0.1f),		// Position randomness range
+		XMFLOAT2(-2, 2),				// rotationStartMinMax
+		XMFLOAT2(-2, 2),				// Random rotation ranges (startMin, startMax, endMin, endMax)
+		XMFLOAT3(0, 0, 0),				// Start velocity
+		XMFLOAT3(0.1f, 0.1f, 0.1f),		// Velocity randomness range
+		XMFLOAT3(0, -1, 0)));			// Constant acceleration
+
+	// PE2 - Portal
+	emitters.push_back(std::make_shared<Emitter>(
+		device,
+		twirlParticle,
+		45,								// Max particles
+		2.0f,							// Particle lifetime
+		20,								// Particles per second
+		3.0f,							// Start size
+		1.0f,							// End size
+		false,
+		XMFLOAT4(0.2f, 0.1f, 0.1f, 0.1f),// Start color
+		XMFLOAT4(0.2f, 0.7f, 0.1f, 1.0f),// End color
+		XMFLOAT3(-2.f, 2.5f, 0),		// Emitter position
+		XMFLOAT3(0, 0, 0),				// Position randomness range
+		XMFLOAT2(-5, 10),
+		XMFLOAT2(-10, 5),			// Random rotation ranges (startMin, startMax, endMin, endMax)
+		XMFLOAT3(0, 0, 0),				// Start velocity
+		XMFLOAT3(0.1f, 0.1f, 0.1f),				// Velocity randomness range
+		XMFLOAT3(0, 0, 0)));			// Constant acceleration
+
+	// PE3
+	emitters.push_back(std::make_shared<Emitter>(
+		device,
+		starParticle,
+		250,							// Max particles
+		2.0f,							// Particle lifetime
+		100,							// Particles per second
+		2.0f,							// Start size
+		0.0f,							// End size
+		false,
+		XMFLOAT4(0.1f, 0.2f, 0.5f, 0.0f),// Start color
+		XMFLOAT4(0.1f, 0.1f, 0.3f, 3.0f),// End color (ending with high alpha so we hit 1.0 sooner)
+		XMFLOAT3(-2.5f, -1, 0),			// Emitter position
+		XMFLOAT3(1, 0, 1),				// Position randomness range
+		XMFLOAT2(0, 0),
+		XMFLOAT2(-3, 3),			// Random rotation ranges (startMin, startMax, endMin, endMax)
+		XMFLOAT3(0, 0, 0),				// Start velocity
+		XMFLOAT3(0.1f, 0, 0.1f),		// Velocity randomness range
+		XMFLOAT3(0, -2, 0)));			// Constant acceleration
+
+
+	// PE4
+	emitters.push_back(std::make_shared<Emitter>(
+		device,
+		animParticle,
+		5,						// Max particles
+		2.0f,					// Particle lifetime
+		2,						// Particles per second
+		2.0f,					// Start size
+		2.0f,					// End size
+		false,
+		XMFLOAT4(1, 1, 1, 1),	// Start color
+		XMFLOAT4(1, 1, 1, 0),	// End color
+		XMFLOAT3(2, -2, 0),		// Emitter position
+		XMFLOAT3(0, 0, 0),		// Position randomness range
+		XMFLOAT2(-2, 2),
+		XMFLOAT2(-2, 2),	// Random rotation ranges (startMin, startMax, endMin, endMax)
+		XMFLOAT3(0, 0, 0),		// Start velocity
+		XMFLOAT3(0, 0, 0),		// Velocity randomness range
+		XMFLOAT3(0, 0, 0),		// Constant acceleration
+		8,
+		8));
+
+	// PE5 - Explosion
+	emitters.push_back(std::make_shared<Emitter>(
+		device,
+		explParticle,
+		1,						// Max particles
+		0.5f,					// Particle lifetime
+		1,						// Particles per second
+		1.0f,					// Start size
+		3.0f,					// End size
+		false,
+		XMFLOAT4(1, 1, 1, 1),	// Start color
+		XMFLOAT4(1, 1, 1, 0.3),	// End color
+		XMFLOAT3(5, -2, 0),		// Emitter position
+		XMFLOAT3(0, 0, 0),		// Position randomness range
+		XMFLOAT2(0, 0),
+		XMFLOAT2(0, 0),	// Random rotation ranges (startMin, startMax, endMin, endMax)
+		XMFLOAT3(0, 0, 0),		// Start velocity
+		XMFLOAT3(0, 0, 0),		// Velocity randomness range
+		XMFLOAT3(0, 0, 0),		// Constant acceleration
+		6,
+		6));
+
+	// PE6 - running
+	emitters.push_back(std::make_shared<Emitter>(
+		device,
+		runParticle,
+		2,						// Max particles
+		1.f,					// Particle lifetime
+		1,						// Particles per second
+		1.0f,					// Start size
+		1.0f,					// End size
+		false,
+		XMFLOAT4(1, 1, 1, 1),	// Start color
+		XMFLOAT4(1, 1, 1, 1),	// End color
+		XMFLOAT3(7, -2, 0),		// Emitter position
+		XMFLOAT3(0, 0, 0),		// Position randomness range
+		XMFLOAT2(0, 0),
+		XMFLOAT2(0, 0),	// Random rotation ranges (startMin, startMax, endMin, endMax)
+		XMFLOAT3(0, 0, 0),		// Start velocity
+		XMFLOAT3(0, 0, 0),		// Velocity randomness range
+		XMFLOAT3(0, 0, 0),		// Constant acceleration
+		5, 2, 2.f));
+
+	// PE6 - running
+	emitters.push_back(std::make_shared<Emitter>(
+		device,
+		sparkParticle,
+		50,						// Max particles
+		2.f,					// Particle lifetime
+		50,						// Particles per second
+		2.5f,					// Start size
+		2.0f,					// End size
+		false,
+		XMFLOAT4(1, 1, 1, 1),	// Start color
+		XMFLOAT4(0.3f, 0.3f, 1.f, 0.5),	// End color
+		XMFLOAT3(2, 3, 0),		// Emitter position
+		XMFLOAT3(0.1f, 0.1f, 0.1f),		// Position randomness range
+		XMFLOAT2(-0.2f, 0.2f),
+		XMFLOAT2(-0.2f, 0.2f),	// Random rotation ranges (startMin, startMax, endMin, endMax)
+		XMFLOAT3(0, 0, 0),		// Start velocity
+		XMFLOAT3(0, 0, 0),		// Velocity randomness range
+		XMFLOAT3(0, 0, 0)));		// Constant acceleration
+
+	// PE6 - shot
+	emitters.push_back(std::make_shared<Emitter>(
+		device,
+		fireParticle,
+		3,						// Max particles
+		1.f,					// Particle lifetime
+		2,						// Particles per second
+		1.0f,					// Start size
+		0.5f,					// End size
+		false,
+		XMFLOAT4(1, 0, 0, 1),	// Start color
+		XMFLOAT4(0, 0, 0, 1),	// End color
+		XMFLOAT3(5, 2, 0),		// Emitter position
+		XMFLOAT3(0.1f, 0.1f, 0.1f),		// Position randomness range
+		XMFLOAT2(-0.2f, 0.2f),
+		XMFLOAT2(-0.2f, 0.2f),	// Random rotation ranges (startMin, startMax, endMin, endMax)
+		XMFLOAT3(60, 0, 0),		// Start velocity
+		XMFLOAT3(0, 0, 0),		// Velocity randomness range
+		XMFLOAT3(-120, -1, 0)));		// Constant acceleration
+
+	// PE6 - shot
+	emitters.push_back(std::make_shared<Emitter>(
+		device,
+		fireParticle,
+		1000,						// Max particles
+		3.f,					// Particle lifetime
+		175,						// Particles per second
+		0.1f,					// Start size
+		0.5f,					// End size
+		false,
+		XMFLOAT4(1, 1, 0, 1),	// Start color
+		XMFLOAT4(1, 0, 1, 0.1),	// End color
+		XMFLOAT3(-4, 0, 0),		// Emitter position
+		XMFLOAT3(4.f, 0.1f, 2.f),		// Position randomness range
+		XMFLOAT2(-1.f, 1.f),	// rot start angle (min/max)
+		XMFLOAT2(-1.f, 1.f),	// rot end angle (min/max)
+		XMFLOAT3(0, 2, 0),		// Start velocity
+		XMFLOAT3(0.5, 0.5, 0.5),		// Velocity randomness range
+		XMFLOAT3(0, -1, 0)));		// Constant acceleration
 }
 
 
@@ -457,8 +682,6 @@ void Game::GenerateLights()
 
 }
 
-
-
 // --------------------------------------------------------
 // Handle resizing DirectX "stuff" to match the new window size.
 // For instance, updating our projection matrix's aspect ratio.
@@ -487,6 +710,11 @@ void Game::Update(float deltaTime, float totalTime)
 	// Update the camera
 	camera->Update(deltaTime);
 
+	for (auto& emitter : emitters)
+	{
+		emitter->Update(deltaTime, totalTime);
+	}
+
 	// Check individual input
 	Input& input = Input::GetInstance();
 	if (input.KeyDown(VK_ESCAPE)) Quit();
@@ -509,7 +737,6 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Clear the depth buffer (resets per-pixel occlusion information)
 		context->ClearDepthStencilView(depthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
-
 
 	// Draw all of the entities
 	for (auto& ge : entities)
@@ -536,6 +763,24 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Draw the sky
 	sky->Draw(camera);
 
+	// Particle drawing
+	{
+		// Particle states
+		context->OMSetBlendState(particleBlendState.Get(), 0, 0xffffffff);	// Additive blending
+		context->OMSetDepthStencilState(particleDepthState.Get(), 0);		// No depth WRITING
+
+		// Draw all of the emitters
+		for (auto& e : emitters)
+		{
+			e->Draw(context, camera, totalTime);
+		}
+
+		// Reset to default states for next frame
+		context->OMSetBlendState(0, 0, 0xffffffff);
+		context->OMSetDepthStencilState(0, 0);
+		context->RSSetState(0);
+	}
+
 	// Frame END
 	// - These should happen exactly ONCE PER FRAME
 	// - At the very end of the frame (after drawing *everything*)
@@ -556,7 +801,6 @@ void Game::Draw(float deltaTime, float totalTime)
 		context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), depthBufferDSV.Get());
 	}
 }
-
 
 // --------------------------------------------------------
 // Draws the point lights as solid color spheres
@@ -614,8 +858,6 @@ void Game::DrawPointLights()
 
 }
 
-
-
 // --------------------------------------------------------
 // Prepares a new frame for the UI, feeding it fresh
 // input and time information for this new frame.
@@ -645,7 +887,6 @@ void Game::UINewFrame(float deltaTime)
 	input.SetKeyboardCapture(io.WantCaptureKeyboard);
 	input.SetMouseCapture(io.WantCaptureMouse);
 }
-
 
 // --------------------------------------------------------
 // Builds the UI for the current frame
@@ -778,7 +1019,6 @@ void Game::BuildUI()
 	ImGui::End();
 }
 
-
 // --------------------------------------------------------
 // Builds the UI for a single camera
 // --------------------------------------------------------
@@ -831,7 +1071,6 @@ void Game::CameraUI(std::shared_ptr<Camera> cam)
 	ImGui::Spacing();
 }
 
-
 // --------------------------------------------------------
 // Builds the UI for a single entity
 // --------------------------------------------------------
@@ -855,7 +1094,6 @@ void Game::EntityUI(std::shared_ptr<GameEntity> entity)
 
 	ImGui::Spacing();
 }
-
 
 // --------------------------------------------------------
 // Builds the UI for a single light
@@ -907,5 +1145,3 @@ void Game::LightUI(Light& light)
 	ImGui::ColorEdit3("Color", &light.Color.x);
 	ImGui::SliderFloat("Intensity", &light.Intensity, 0.0f, 10.0f);
 }
-
-

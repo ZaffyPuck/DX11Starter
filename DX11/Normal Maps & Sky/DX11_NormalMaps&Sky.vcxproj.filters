@@ -1,0 +1,203 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <FxCompile Include="VertexShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PixelShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="CustomPS1.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="CustomPS2.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="NormalMapVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="NormalMapPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DXCore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\ImGui\imgui_draw.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\ImGui\imgui_tables.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\ImGui\imgui_widgets.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\ImGui\imgui_demo.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\ImGui\Windows\imgui_impl_win32.cpp">
+      <Filter>ImGUI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\ImGui\DX11\imgui_impl_dx11.cpp">
+      <Filter>ImGUI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\ImGui\imgui.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SimpleShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sky.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Camera.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="DXCore.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\ImGui\imgui_internal.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\ImGui\imstb_rectpack.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\ImGui\imstb_textedit.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\ImGui\imstb_truetype.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\ImGui\Windows\imgui_impl_win32.h">
+      <Filter>ImGUI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\ImGui\DX11\imgui_impl_dx11.h">
+      <Filter>ImGUI\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\ImGui\imconfig.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\ImGui\imgui.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleShader.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Cameras\BufferStructs.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Lights.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sky.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{73e31b2d-9d47-4af5-ab9f-9e90e4ad4013}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{d644b88f-a27b-4a86-9c77-b45525dea947}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{8a8806e7-6d28-4d28-aefe-6fa9b9a2df02}</UniqueIdentifier>
+      <Extensions>hlsl;hlsli</Extensions>
+    </Filter>
+    <Filter Include="ImGUI">
+      <UniqueIdentifier>{a5532d2c-b46e-4a84-93a3-7b71c09a860d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGUI\DX11">
+      <UniqueIdentifier>{6513e214-77fe-417e-82d2-65ff57260db1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGUI\Windows">
+      <UniqueIdentifier>{ce4fa5f7-0819-406b-97bd-63324a364490}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="HeaderStructs.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="packages.config" />
+    <None Include="Sky.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="NormalMap.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Lighting.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+</Project>

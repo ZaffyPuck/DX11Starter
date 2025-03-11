@@ -60,14 +60,14 @@ void Game::Init()
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
 	CreateGeometry();
-	
+
 	// Set initial graphics API state
 	//  - These settings persist until we change them
 	//  - Some of these, like the primitive topology & input layout, probably won't change
 	//  - Others, like setting shaders, will need to be moved elsewhere later
 	{
 		// Tell the input assembler (IA) stage of the pipeline what kind of
-		// geometric primitives (points, lines or triangles) we want to draw.  
+		// geometric primitives (points, lines or triangles) we want to draw.
 		// Essentially: "What kind of shape should the GPU draw with our vertices?"
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -86,9 +86,9 @@ void Game::Init()
 
 // --------------------------------------------------------
 // Loads shaders from compiled shader object (.cso) files
-// and also created the Input Layout that describes our 
-// vertex data to the rendering pipeline. 
-// - Input Layout creation is done here because it must 
+// and also created the Input Layout that describes our
+// vertex data to the rendering pipeline.
+// - Input Layout creation is done here because it must
 //    be verified against vertex shader byte code
 // - We'll have that byte code already loaded below
 // --------------------------------------------------------
@@ -112,21 +112,29 @@ void Game::LoadShaders()
 		D3DReadFileToBlob(FixPath(L"PixelShader.cso").c_str(), &pixelShaderBlob);
 		D3DReadFileToBlob(FixPath(L"VertexShader.cso").c_str(), &vertexShaderBlob);
 
+		HRESULT hr = S_OK;
 		// Create the actual Direct3D shaders on the GPU
-		device->CreatePixelShader(
+		hr = device->CreatePixelShader(
 			pixelShaderBlob->GetBufferPointer(),	// Pointer to blob's contents
 			pixelShaderBlob->GetBufferSize(),		// How big is that data?
 			0,										// No classes in this shader
 			pixelShader.GetAddressOf());			// Address of the ID3D11PixelShader pointer
-
-		device->CreateVertexShader(
+		if (FAILED(hr))
+		{
+			return;
+		}
+		hr = device->CreateVertexShader(
 			vertexShaderBlob->GetBufferPointer(),	// Get a pointer to the blob's contents
 			vertexShaderBlob->GetBufferSize(),		// How big is that data?
 			0,										// No classes in this shader
 			vertexShader.GetAddressOf());			// The address of the ID3D11VertexShader pointer
+		if (FAILED(hr))
+		{
+			return;
+		}
 	}
 
-	// Create an input layout 
+	// Create an input layout
 	//  - This describes the layout of data sent to a vertex shader
 	//  - In other words, it describes how to interpret data (numbers) in a vertex buffer
 	//  - Doing this NOW because it requires a vertex shader's byte code to verify against!
@@ -174,9 +182,9 @@ void Game::CreateGeometry()
 	//    a "3d world" yet, we're simply describing positions within the
 	//    bounds of how the rasterizer sees our screen: [-1 to +1] on X and Y
 	// - This means (0,0) is at the very center of the screen.
-	// - These are known as "Normalized Device Coordinates" or "Homogeneous 
+	// - These are known as "Normalized Device Coordinates" or "Homogeneous
 	//    Screen Coords", which are ways to describe a position without
-	//    knowing the exact size (in pixels) of the image/window/etc.  
+	//    knowing the exact size (in pixels) of the image/window/etc.
 	// - Long story short: Resizing the window also resizes the triangle,
 	//    since we're describing the triangle in terms of the window itself
 	Vertex vertices[] =
@@ -188,7 +196,7 @@ void Game::CreateGeometry()
 
 	// Set up indices, which tell us which vertices to use and in which order
 	// - This is redundant for just 3 vertices, but will be more useful later
-	// - Indices are technically not required if the vertices are in the buffer 
+	// - Indices are technically not required if the vertices are in the buffer
 	//    in the correct order and each one will be used exactly once
 	// - But just to see how it's done...
 	unsigned int indices[] = { 0, 1, 2 };
@@ -229,7 +237,7 @@ void Game::CreateGeometry()
 	{
 		// Describe the buffer, as we did above, with two major differences
 		//  - Byte Width (3 unsigned integers vs. 3 whole vertices)
-		//  - Bind Flag (used as an index buffer instead of a vertex buffer) 
+		//  - Bind Flag (used as an index buffer instead of a vertex buffer)
 		D3D11_BUFFER_DESC ibd	= {};
 		ibd.Usage				= D3D11_USAGE_IMMUTABLE;	// Will NEVER change
 		ibd.ByteWidth			= sizeof(unsigned int) * 3;	// 3 = number of indices in the buffer

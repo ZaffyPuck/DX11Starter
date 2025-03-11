@@ -1,5 +1,4 @@
-
-#include <Windows.h>
+#include "Windows.h"
 #include "Game.h"
 
 // --------------------------------------------------------
@@ -7,10 +6,13 @@
 // --------------------------------------------------------
 int WINAPI WinMain(
 	_In_ HINSTANCE hInstance,			// The handle to this app's instance
-	_In_opt_ HINSTANCE hPrevInstance,	// A handle to the previous instance of the app (always NULL)
+	_In_opt_ HINSTANCE hPrevInstance,	// A handle to the previous instance of the app. It was used in 16-bit Windows, but is now always zero.
 	_In_ LPSTR lpCmdLine,				// Command line params
-	_In_ int nCmdShow)					// How the window should be shown (we ignore this)
+	_In_ int nCmdShow)					// How the window should be shown (min,max,normal) (we ignore this)
 {
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
+
 #if defined(DEBUG) | defined(_DEBUG)
 	// Enable memory leak detection as a quick and dirty
 	// way of determining if we forgot to clean something up
@@ -18,9 +20,32 @@ int WINAPI WinMain(
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
+
 	// Create the Game object using
 	// the app handle we got from WinMain
 	Game dxGame(hInstance);
+
+#if defined(DEBUG) | defined(_DEBUG)
+	LPWSTR* szArglist;
+	int nArgs;
+	int i;
+
+	LPWSTR cmd = GetCommandLineW();
+	szArglist = CommandLineToArgvW(cmd, &nArgs);
+	if (NULL == szArglist)
+	{
+		wprintf(L"CommandLineToArgvW failed\n");
+		return 0;
+	}
+	else for (i = 0; i < nArgs; i++)
+	{
+		printf("%d: %ws\n", i, szArglist[i]);
+	}
+
+	// Free memory allocated for CommandLineToArgvW arguments.
+	LocalFree(szArglist);
+#endif
+
 
 	// Result variable for function calls below
 	HRESULT hr = S_OK;

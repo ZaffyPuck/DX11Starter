@@ -48,7 +48,7 @@ public:
 
 protected:
 	HINSTANCE		hInstance;		// The handle to the application
-	HWND			hWnd;			// The handle to the window itself
+	HWND			hWnd;			// The handle to the window
 	std::wstring	titleBarText;	// Custom text in window's title bar
 	bool			titleBarStats;	// Show extra stats in title bar?
 
@@ -94,4 +94,3 @@ private:
 	void UpdateTimer();			// Updates the timer for this frame
 	void UpdateTitleBarStats();	// Puts debug info in the title bar
 };
-

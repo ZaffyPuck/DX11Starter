@@ -57,26 +57,29 @@
     <ClCompile Include="Helpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_impl_win32.cpp">
+    <ClCompile Include="..\..\ImGui\imgui.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_tables.cpp">
+    <ClCompile Include="..\..\ImGui\imgui_demo.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_widgets.cpp">
+    <ClCompile Include="..\..\ImGui\imgui_draw.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui.cpp">
+    <ClCompile Include="..\..\ImGui\imgui_impl_dx11.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_demo.cpp">
+    <ClCompile Include="..\..\ImGui\imgui_impl_win32.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_draw.cpp">
+    <ClCompile Include="..\..\ImGui\imgui_tables.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_impl_dx11.cpp">
+    <ClCompile Include="..\..\ImGui\imgui_widgets.cpp">
       <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Emitter.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -119,36 +122,39 @@
     <ClInclude Include="Helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_win32.h">
+    <ClInclude Include="..\..\ImGui\imconfig.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imgui_internal.h">
+    <ClInclude Include="..\..\ImGui\imgui.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imstb_rectpack.h">
+    <ClInclude Include="..\..\ImGui\imgui_impl_dx11.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imstb_textedit.h">
+    <ClInclude Include="..\..\ImGui\imgui_impl_win32.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imstb_truetype.h">
+    <ClInclude Include="..\..\ImGui\imgui_internal.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imconfig.h">
+    <ClInclude Include="..\..\ImGui\imstb_rectpack.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imgui.h">
+    <ClInclude Include="..\..\ImGui\imstb_textedit.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_dx11.h">
+    <ClInclude Include="..\..\ImGui\imstb_truetype.h">
       <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Emitter.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="Lighting.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">
@@ -167,6 +173,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="SkyVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticlePS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
